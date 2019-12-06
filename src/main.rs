@@ -9,14 +9,13 @@ fn main() {
 
     let filename = format!("./src/inputs/{:?}.txt", day);
 
-    let input = fs::read_to_string(filename)
-        .expect("Something went wrong reading the file");
-
+    let input = fs::read_to_string(filename).expect("Something went wrong reading the file");
+    println!("Day {}:", day);
     match day {
         1 => day_one(input),
         2 => day_two(input),
         3 => day_three(input),
-        _ => println!("Specify a day")
+        _ => println!("Specify a day"),
     }
 }
 
@@ -42,7 +41,7 @@ fn day_three(input: String) -> () {
                 'L' => dx = -1,
                 'U' => dy = -1,
                 'D' => dy = 1,
-                _ => println!("Invalid dir")
+                _ => println!("Invalid dir"),
             }
             let mut i = 0;
             while i < size {
@@ -53,14 +52,21 @@ fn day_three(input: String) -> () {
                 let distance = x.abs() + y.abs();
                 let value = world.entry(format!("{}{}", x, y)).or_insert(first_wire);
                 if first_wire {
-                    move_counter.entry(format!("{}{}", x, y)).or_insert(total_moves);
+                    move_counter
+                        .entry(format!("{}{}", x, y))
+                        .or_insert(total_moves);
                 }
                 if !first_wire && *value {
                     if distance < nearest_distance {
                         //there's a nearer crossing
                         nearest_distance = distance;
                     }
-                    crossings.push(total_moves + *move_counter.entry(format!("{}{}", x, y)).or_insert(i32::MAX));
+                    crossings.push(
+                        total_moves
+                            + *move_counter
+                                .entry(format!("{}{}", x, y))
+                                .or_insert(i32::MAX),
+                    );
                 }
             }
         }
@@ -69,7 +75,7 @@ fn day_three(input: String) -> () {
     crossings.sort();
     // Don't know why the first is invalid, and why the second is correct
     println!("Nearest intersection: {}", nearest_distance);
-    println!("First intersection: {}", crossings[1]);
+    println!("First intersection:   {}", crossings[1]);
 }
 
 fn parse_int(input: &str) -> i32 {
@@ -77,11 +83,23 @@ fn parse_int(input: &str) -> i32 {
 }
 
 fn day_two(input: String) -> () {
+    let mut memory: Vec<i32> = input.clone().split(",").map(parse_int).collect();
+
+    memory[1] = 12;
+    memory[2] = 2;
+
+    run_computer(&mut memory);
+
+    println!("1202 Result:        {}", memory[0]);
     let mut done = false;
     for noun in 0..100 {
         for verb in 0..100 {
-            if run_computer(input.clone(), noun, verb) == 19690720 {
-                println!("{:?}", verb + noun * 100);
+            let mut test_memory: Vec<i32> = input.clone().split(",").map(parse_int).collect();
+            test_memory[1] = noun;
+            test_memory[2] = verb;
+            run_computer(&mut test_memory);
+            if test_memory[0] == 19690720 {
+                println!("Correct Error Code: {:?}", verb + noun * 100);
                 done = true;
                 break;
             }
@@ -92,15 +110,11 @@ fn day_two(input: String) -> () {
     }
 }
 
-fn run_computer(input: String, noun: i32, verb: i32) -> i32 {
-    let mut memory: Vec<i32> = input.split(",").map(parse_int).collect();
-    memory[1] = noun;
-    memory[2] = verb;
-    let mut done = false;
+fn run_computer(memory: &mut Vec<i32>) -> () {
     let mut pc = 0;
-    while !done {
+    loop {
         if memory[pc] == 99 {
-            done = true
+            break;
         } else if memory[pc] == 1 {
             let target = memory[pc + 3] as usize;
             memory[target] = memory[memory[pc + 2] as usize] + memory[memory[pc + 1] as usize];
@@ -109,16 +123,22 @@ fn run_computer(input: String, noun: i32, verb: i32) -> i32 {
             memory[target] = memory[memory[pc + 2] as usize] * memory[memory[pc + 1] as usize];
         } else {
             println!("Invalid memory!");
-            done = true;
+            break;
         }
         pc += 4;
     }
-    return memory[0]
 }
 
 fn day_one(input: String) -> () {
-    let inputs = input.split_ascii_whitespace();
-    println!("{:?}", inputs.map(get_fuel).sum::<i32>());
+    let first_sum = input.split_ascii_whitespace().map(get_fuel_basic).sum::<i32>();
+    let second_sum = input.split_ascii_whitespace().map(get_fuel).sum::<i32>();
+    println!("Basic calculation:    {:?}", first_sum);
+    println!("Advanced calculation: {:?}", second_sum);
+}
+
+fn get_fuel_basic(input: &str) -> i32 {
+    let mass = input.parse::<i32>().unwrap();
+    return (mass / 3) - 2;
 }
 
 fn get_fuel(input: &str) -> i32 {
@@ -126,7 +146,7 @@ fn get_fuel(input: &str) -> i32 {
     let mut to_add = (mass / 3) - 2;
     let mut total_to_add = to_add;
     let mut done = false;
-    while !done{
+    while !done {
         to_add = (to_add / 3) - 2;
         if to_add <= 0 {
             done = true
@@ -134,6 +154,6 @@ fn get_fuel(input: &str) -> i32 {
             total_to_add += to_add
         }
     }
-    
+
     return total_to_add;
 }
