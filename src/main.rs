@@ -9,14 +9,152 @@ fn main() {
 
     let filename = format!("./src/inputs/{:?}.txt", day);
 
-    let input = fs::read_to_string(filename).expect("Something went wrong reading the file");
+    let input = fs::read_to_string(filename).expect("Something went wrong reading the file").trim().to_string();
     println!("Day {}:", day);
     match day {
         1 => day_one(input),
         2 => day_two(input),
         3 => day_three(input),
+        4 => day_four(input),
+        5 => day_five(input),
+        6 => day_six(input),
         _ => println!("Specify a day"),
     }
+}
+
+fn day_six(input: String) -> () {
+    let orbits = input.split("\n");
+    let mut orbit_map: HashMap<&str, &str> = HashMap::new();
+    for orbit in orbits {
+        let parts: Vec<&str> = orbit.split(")").collect();
+        if parts.len() == 2 {
+            orbit_map.insert(parts[1], parts[0]);
+        }
+    }
+    let mut checksum = 0;
+    for orbit in orbit_map.iter() {
+        let mut step = orbit.1;
+        loop {
+            checksum += 1;
+            match step {
+                &"COM" => break,
+                _ => (),
+            }
+            step = &orbit_map[step];
+        }
+    }
+    println!("Checksum:        {}", checksum);
+    let mut you_path: Vec<&str> = Vec::new();
+    let mut san_path: Vec<&str> = Vec::new();
+    let mut step = orbit_map["YOU"];
+    loop {
+        match step {
+            "COM" => break,
+            _ => (),
+        }
+        you_path.push(orbit_map[step]);
+        step = &orbit_map[step];
+    }
+    step = orbit_map["SAN"];
+    let target: &str;
+    let mut transfers = 0;
+    loop {
+        if you_path.contains(&step) {
+            target = step;
+            break;
+        }
+        transfers += 1;
+        san_path.push(orbit_map[step]);
+        step = &orbit_map[step];
+    }
+    for you in you_path {
+        transfers += 1;
+        if you == target {
+            break;
+        }
+    }
+    println!("Total Transfers: {}", transfers);
+}
+
+fn day_five(input: String) -> () {
+    let mut memory_one: Vec<i32> = input.split(",").map(parse_int).collect();
+    let result_one = run_computer(&mut memory_one, 1);
+    println!("Diagnostic Code 1: {}", result_one);
+    let mut memory_five: Vec<i32> = input.split(",").map(parse_int).collect();
+    let result_five = run_computer(&mut memory_five, 5);
+    println!("Diagnostic Code 5: {}", result_five);
+}
+
+fn day_four(input: String) -> () {
+    let parsed: Vec<i32> = input.split('-').map(parse_int).collect();
+    let start = parsed[0];
+    let end = parsed[1];
+    let mut test = start;
+    let mut easy_counter = 0;
+    let mut hard_counter = 0;
+    while test < end {
+        if passes_easy_test(test) {
+            easy_counter += 1;
+            if passes_hard_test(test) {
+                hard_counter += 1;
+            }
+        }
+        test += 1;
+    }
+    println!("Easy: {}", easy_counter);
+    println!("Hard: {}", hard_counter);
+}
+
+fn passes_easy_test(n: i32) -> bool {
+    let string = format!("{}", n);
+    let mut current_char = string.chars().nth(0).unwrap();
+    let mut found_double = false;
+    let size = 6;
+    let mut i = 1;
+    while i < size {
+        let character = string.chars().nth(i).unwrap();
+        if character < current_char {
+            return false;
+        }
+        if character == current_char {
+            found_double = true;
+        }
+        current_char = character;
+        i += 1;
+    }
+    return found_double;
+}
+
+fn passes_hard_test(n: i32) -> bool {
+    let string = format!("{}", n);
+    let mut current_char = string.chars().nth(1).unwrap();
+    let mut previous_char = string.chars().nth(0).unwrap();
+    if previous_char > current_char {
+        return false;
+    }
+    let mut found_double = false;
+    let size = 6;
+    let mut i = 2;
+    while i < size {
+        let character = string.chars().nth(i).unwrap();
+        if character < current_char {
+            return false;
+        }
+        if i == 2 && previous_char == current_char && character != current_char {
+            found_double = true;
+        }
+        if character == current_char && current_char != previous_char {
+            if i < (size - 1) {
+                found_double |= character != string.chars().nth(i + 1).unwrap()
+            } else {
+                found_double = true;
+            }
+        }
+        previous_char = current_char;
+        current_char = character;
+        i += 1;
+    }
+    return found_double;
 }
 
 fn day_three(input: String) -> () {
@@ -88,7 +226,7 @@ fn day_two(input: String) -> () {
     memory[1] = 12;
     memory[2] = 2;
 
-    run_computer(&mut memory);
+    run_computer(&mut memory, 0);
 
     println!("1202 Result:        {}", memory[0]);
     let mut done = false;
@@ -97,7 +235,7 @@ fn day_two(input: String) -> () {
             let mut test_memory: Vec<i32> = input.clone().split(",").map(parse_int).collect();
             test_memory[1] = noun;
             test_memory[2] = verb;
-            run_computer(&mut test_memory);
+            run_computer(&mut test_memory, 0);
             if test_memory[0] == 19690720 {
                 println!("Correct Error Code: {:?}", verb + noun * 100);
                 done = true;
@@ -110,23 +248,85 @@ fn day_two(input: String) -> () {
     }
 }
 
-fn run_computer(memory: &mut Vec<i32>) -> () {
+fn run_computer(memory: &mut Vec<i32>, input: i32) -> i32 {
     let mut pc = 0;
+    let mut output = 0;
     loop {
-        if memory[pc] == 99 {
+        let opcode = memory[pc as usize] % 100;
+        if opcode == 99 {
             break;
-        } else if memory[pc] == 1 {
-            let target = memory[pc + 3] as usize;
-            memory[target] = memory[memory[pc + 2] as usize] + memory[memory[pc + 1] as usize];
-        } else if memory[pc] == 2 {
-            let target = memory[pc + 3] as usize;
-            memory[target] = memory[memory[pc + 2] as usize] * memory[memory[pc + 1] as usize];
+        }
+        let arg1: i32;
+        if (memory[pc as usize] / 100) % 10 == 1 {
+            arg1 = memory[(pc + 1) as usize];
+        } else {
+            arg1 = memory[memory[(pc + 1) as usize] as usize];
+        }
+        let arg2: i32;
+        if opcode == 3 || opcode == 4 {
+            arg2 = 0;
+        } else if (memory[pc as usize] / 1000) % 10 == 1 {
+            arg2 = memory[(pc + 2) as usize];
+        } else {
+            arg2 = memory[memory[(pc + 2) as usize] as usize];
+        }
+        if opcode == 1 {
+            // add
+            let target = memory[(pc + 3) as usize] as usize;
+            memory[target] = arg2 + arg1;
+            pc += 4;
+        } else if opcode == 2 {
+            //multiply
+            let target = memory[(pc + 3) as usize] as usize;
+            memory[target] = arg2 * arg1;
+            pc += 4;
+        } else if opcode == 3 {
+            //input
+            let target = memory[(pc + 1) as usize] as usize;
+            memory[target] = input;
+            pc += 2;
+        } else if opcode == 4 {
+            //output
+            output = arg1;
+            pc += 2;
+        } else if opcode == 5 {
+            // jump if true
+            if arg1 != 0 {
+                pc = arg2;
+            } else {
+                pc += 3;
+            }
+        } else if opcode == 6 {
+            // jump if false
+            if arg1 == 0 {
+                pc = arg2;
+            } else {
+                pc += 3;
+            }
+        } else if opcode == 7 {
+            // less than
+            let target = memory[(pc + 3) as usize] as usize;
+            if arg1 < arg2 {
+                memory[target] = 1;
+            } else {
+                memory[target] = 0;
+            }
+            pc += 4;
+        } else if opcode == 8 {
+            //equals
+            let target = memory[(pc + 3) as usize] as usize;
+            if arg1 == arg2 {
+                memory[target] = 1;
+            } else {
+                memory[target] = 0;
+            }
+            pc += 4;
         } else {
             println!("Invalid memory!");
             break;
         }
-        pc += 4;
     }
+    return output;
 }
 
 fn day_one(input: String) -> () {
