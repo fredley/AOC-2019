@@ -42,11 +42,16 @@ fn run_with_feedback(memory: &Vec<i64>) -> () {
 
 fn run_amplifiers_with_feedback(memory: &Vec<i64>, a: i64, b: i64, c: i64, d: i64, e: i64) -> i64 {
     let mut input_value: i64 = 0;
-    let mut computer_a = computer::Computer::new(memory.clone(), vec![a, input_value],);
-    let mut computer_b = computer::Computer::new(memory.clone(), vec![b, input_value],);
-    let mut computer_c = computer::Computer::new(memory.clone(), vec![c, input_value],);
-    let mut computer_d = computer::Computer::new(memory.clone(), vec![d, input_value],);
-    let mut computer_e = computer::Computer::new(memory.clone(), vec![e, input_value],);
+    let mut computer_a = computer::Computer::new(vec![a, input_value],);
+    computer_a.set_memory(memory.clone());
+    let mut computer_b = computer::Computer::new(vec![b, input_value],);
+    computer_b.set_memory(memory.clone());
+    let mut computer_c = computer::Computer::new(vec![c, input_value],);
+    computer_c.set_memory(memory.clone());
+    let mut computer_d = computer::Computer::new(vec![d, input_value],);
+    computer_d.set_memory(memory.clone());
+    let mut computer_e = computer::Computer::new(vec![e, input_value],);
+    computer_e.set_memory(memory.clone());
     let mut first_run = true;
     let mut output_value = 0;
     loop {

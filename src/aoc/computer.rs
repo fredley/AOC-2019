@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub fn run_computer(memory: &mut Vec<i32>, input: Vec<i32>) -> i32 {
     let mut pc = 0;
     let mut output = 0;
@@ -85,11 +87,11 @@ pub trait Computes {
     fn set_memory(&mut self, memory: Vec<i64>) -> ();
     fn set_input(&mut self, input: Vec<i64>) -> ();
     fn run(&mut self) -> i64;
-    fn new(memory: Vec<i64>, input: Vec<i64>) -> Computer;
+    fn new(input: Vec<i64>) -> Computer;
 }
 
 pub struct Computer {
-    pub memory: Vec<i64>,
+    pub memory: HashMap<i64, i64>,
     pub input: Vec<i64>,
     pub pc: i64,
     pub input_pointer: usize,
@@ -99,9 +101,9 @@ pub struct Computer {
 
 impl Computes for Computer {
 
-    fn new(memory: Vec<i64>, input: Vec<i64>) -> Computer {
+    fn new(input: Vec<i64>) -> Computer {
         return Computer{
-            memory: memory.clone(),
+            memory: HashMap::new(),
             pc: 0,
             input_pointer: 0,
             input: input.clone(),
@@ -111,7 +113,11 @@ impl Computes for Computer {
     }
 
     fn set_memory(&mut self, memory: Vec<i64>) -> () {
-        self.memory = memory;
+        let mut i: i64 = 0;
+        while i < memory.len() as i64 {
+            self.memory.insert(i, memory[i as usize]);
+            i+=1;
+        }
     }
 
     fn set_input(&mut self, input: Vec<i64>) -> () {
@@ -122,45 +128,59 @@ impl Computes for Computer {
     fn run(&mut self) -> i64 {
         let mut output = 0;
         loop {
-            let opcode = self.memory[self.pc as usize] % 100;
+            let opcode = self.memory[&self.pc] % 100;
             if opcode == 99 {
                 self.is_halted = true;
                 return output;
             }
             let arg1: i64;
-            let mode1 = (self.memory[self.pc as usize] / 100) % 10;
+            let mode1 = (self.memory[&self.pc] / 100) % 10;
             if mode1 == 1{
-                arg1 = self.memory[(self.pc + 1) as usize];
+                arg1 = *self.memory.entry(self.pc + 1).or_insert(0);
             } else if mode1 == 2 {
-                arg1 = self.memory[(self.memory[(self.pc + 1) as usize] + self.relative_base) as usize];
+                let rel = *self.memory.entry(self.pc + 1).or_insert(0);
+                arg1 = *self.memory.entry(rel + self.relative_base).or_insert(0);
             } else {
-                arg1 = self.memory[self.memory[(self.pc + 1) as usize] as usize];
+                let rel = *self.memory.entry(self.pc + 1).or_insert(0);
+                arg1 = *self.memory.entry(rel).or_insert(0);
             }
             let arg2: i64;
-            let mode2 = (self.memory[self.pc as usize] / 1000) % 10;
-            if opcode == 3 || opcode == 4 {
+            let mode2 = (self.memory[&self.pc] / 1000) % 10;
+            if opcode == 3 || opcode == 4 || opcode == 9 {
                 arg2 = 0;
             } else if mode2 == 1 {
-                arg2 = self.memory[(self.pc + 2) as usize];
+                arg2 = *self.memory.entry(self.pc + 2).or_insert(0);
             } else if mode2 == 2 {
-                arg2 = self.memory[(self.memory[(self.pc + 2) as usize] + self.relative_base) as usize];
+                let rel = *self.memory.entry(self.pc + 2).or_insert(0);
+                arg2 = *self.memory.entry(rel + self.relative_base).or_insert(0);
             } else {
-                arg2 = self.memory[self.memory[(self.pc + 2) as usize] as usize];
+                let rel = *self.memory.entry(self.pc + 2).or_insert(0);
+                arg2 = *self.memory.entry(rel).or_insert(0);
             }
+            let mode3 = (self.memory[&self.pc] / 10000) % 10;
             if opcode == 1 {
                 // add
-                let target = self.memory[(self.pc + 3) as usize] as usize;
-                self.memory[target] = arg2 + arg1;
+                let mut target = self.memory[&(self.pc + 3)];
+                if mode3 == 2 {
+                    target += self.relative_base;
+                }
+                self.memory.insert(target, arg2 + arg1);
                 self.pc += 4;
             } else if opcode == 2 {
                 //multiply
-                let target = self.memory[(self.pc + 3) as usize] as usize;
-                self.memory[target] = arg2 * arg1;
+                let mut target = self.memory[&(self.pc + 3)];
+                if mode3 == 2 {
+                    target += self.relative_base;
+                }
+                self.memory.insert(target, arg2 * arg1);
                 self.pc += 4;
             } else if opcode == 3 {
                 //input
-                let target = self.memory[(self.pc + 1) as usize] as usize;
-                self.memory[target] = self.input[self.input_pointer];
+                let mut target = *self.memory.entry(self.pc + 1).or_insert(0);
+                if mode1 == 2 {
+                    target += self.relative_base;
+                }
+                self.memory.insert(target, self.input[self.input_pointer]);
                 self.input_pointer += 1;
                 self.pc += 2;
             } else if opcode == 4 {
@@ -184,20 +204,26 @@ impl Computes for Computer {
                 }
             } else if opcode == 7 {
                 // less than
-                let target = self.memory[(self.pc + 3) as usize] as usize;
+                let mut target = self.memory[&(self.pc + 3)];
+                if mode3 == 2 {
+                    target += self.relative_base;
+                }
                 if arg1 < arg2 {
-                    self.memory[target] = 1;
+                    self.memory.insert(target, 1);
                 } else {
-                    self.memory[target] = 0;
+                    self.memory.insert(target, 0);
                 }
                 self.pc += 4;
             } else if opcode == 8 {
                 //equals
-                let target = self.memory[(self.pc + 3) as usize] as usize;
+                let mut target = self.memory[&(self.pc + 3)];
+                if mode3 == 2 {
+                    target += self.relative_base;
+                }
                 if arg1 == arg2 {
-                    self.memory[target] = 1;
+                    self.memory.insert(target, 1);
                 } else {
-                    self.memory[target] = 0;
+                    self.memory.insert(target, 0);
                 }
                 self.pc += 4;
             } else if opcode == 9 {
