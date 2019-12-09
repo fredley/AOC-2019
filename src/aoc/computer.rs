@@ -83,13 +83,6 @@ pub fn run_computer(memory: &mut Vec<i32>, input: Vec<i32>) -> i32 {
     return output;
 }
 
-pub trait Computes {
-    fn set_memory(&mut self, memory: Vec<i64>) -> ();
-    fn set_input(&mut self, input: Vec<i64>) -> ();
-    fn run(&mut self) -> i64;
-    fn new(input: Vec<i64>) -> Computer;
-}
-
 pub struct Computer {
     pub memory: HashMap<i64, i64>,
     pub input: Vec<i64>,
@@ -99,9 +92,9 @@ pub struct Computer {
     pub relative_base: i64,
 }
 
-impl Computes for Computer {
+impl Computer {
 
-    fn new(input: Vec<i64>) -> Computer {
+    pub fn new(input: Vec<i64>) -> Computer {
         return Computer{
             memory: HashMap::new(),
             pc: 0,
@@ -112,7 +105,7 @@ impl Computes for Computer {
         }
     }
 
-    fn set_memory(&mut self, memory: Vec<i64>) -> () {
+    pub fn set_memory(&mut self, memory: Vec<i64>) -> () {
         let mut i: i64 = 0;
         while i < memory.len() as i64 {
             self.memory.insert(i, memory[i as usize]);
@@ -120,12 +113,12 @@ impl Computes for Computer {
         }
     }
 
-    fn set_input(&mut self, input: Vec<i64>) -> () {
+    pub fn set_input(&mut self, input: Vec<i64>) -> () {
         self.input = input;
         self.input_pointer = 0;
     }
 
-    fn run(&mut self) -> i64 {
+    pub fn run(&mut self) -> i64 {
         let mut output = 0;
         loop {
             let opcode = self.memory[&self.pc] % 100;
