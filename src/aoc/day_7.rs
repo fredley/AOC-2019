@@ -3,12 +3,12 @@ use crate::aoc::computer::Computes;
 use crate::aoc::utils;
 
 pub fn day_seven(input: String) -> () {
-    let memory: Vec<i32> = input.split(",").map(utils::parse_int).collect();
-    run_without_feedback(&memory);
+    let memory: Vec<i64> = input.split(",").map(utils::parse_int_64).collect();
+    run_without_feedback(&input.split(",").map(utils::parse_int).collect());
     run_with_feedback(&memory);
 }
 
-fn run_with_feedback(memory: &Vec<i32>) -> () {
+fn run_with_feedback(memory: &Vec<i64>) -> () {
     let mut max_output = 0;
     for a in vec![5,6,7,8,9] {
         for b in vec![5,6,7,8,9] {
@@ -40,43 +40,13 @@ fn run_with_feedback(memory: &Vec<i32>) -> () {
 
 }
 
-fn run_amplifiers_with_feedback(memory: &Vec<i32>, a: i32, b: i32, c: i32, d: i32, e: i32) -> i32 {
-    let mut input_value: i32 = 0;
-    let mut computer_a = computer::Computer{
-        memory: memory.clone(),
-        pc: 0,
-        input_pointer: 0,
-        input: vec![a, input_value],
-        is_halted: false,
-    };
-    let mut computer_b = computer::Computer{
-        memory: memory.clone(),
-        pc: 0,
-        input_pointer: 0,
-        input: vec![b, input_value],
-        is_halted: false,
-    };
-    let mut computer_c = computer::Computer{
-        memory: memory.clone(),
-        pc: 0,
-        input_pointer: 0,
-        input: vec![c, input_value],
-        is_halted: false,
-    };
-    let mut computer_d = computer::Computer{
-        memory: memory.clone(),
-        pc: 0,
-        input_pointer: 0,
-        input: vec![d, input_value],
-        is_halted: false,
-    };
-    let mut computer_e = computer::Computer{
-        memory: memory.clone(),
-        pc: 0,
-        input_pointer: 0,
-        input: vec![e, input_value],
-        is_halted: false,
-    };
+fn run_amplifiers_with_feedback(memory: &Vec<i64>, a: i64, b: i64, c: i64, d: i64, e: i64) -> i64 {
+    let mut input_value: i64 = 0;
+    let mut computer_a = computer::Computer::new(memory.clone(), vec![a, input_value],);
+    let mut computer_b = computer::Computer::new(memory.clone(), vec![b, input_value],);
+    let mut computer_c = computer::Computer::new(memory.clone(), vec![c, input_value],);
+    let mut computer_d = computer::Computer::new(memory.clone(), vec![d, input_value],);
+    let mut computer_e = computer::Computer::new(memory.clone(), vec![e, input_value],);
     let mut first_run = true;
     let mut output_value = 0;
     loop {

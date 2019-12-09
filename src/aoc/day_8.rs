@@ -52,7 +52,6 @@ pub fn day_eight(input: String) -> () {
     println!("Image:");
     let mut image_iter = image.iter();
     y = 0;
-    x = 0;
     while y < height {
         x = 0;
         while x < width {
