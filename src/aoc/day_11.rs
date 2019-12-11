@@ -1,3 +1,4 @@
+use std::cmp;
 use std::collections::HashMap;
 
 use crate::aoc::computer;
@@ -26,17 +27,16 @@ pub fn day_eleven(input: String) -> () {
     while y <= white_results.bottom_right.y{
         x = white_results.top_left.x;
         while x <= white_results.bottom_right.x {
-            if *white_results.hull.entry(Coord{x: x, y: y}).or_insert(0) == 1 {
-                print!("#")
-            } else {
-                print!(" ")
+            match *white_results.hull.entry(Coord{x: x, y: y}).or_insert(0) {
+                1 => print!("#"),
+                0 => print!(" "),
+                _ => print!("X"),
             }
             x += 1;
         }
         print!("\n");
         y += 1;
     }
-
 }
 
 fn paint_hull(memory: Vec<i64>, start_white: bool) -> PaintingResult {
@@ -72,18 +72,10 @@ fn paint_hull(memory: Vec<i64>, start_white: bool) -> PaintingResult {
             3 => x -= 1,
             _ => println!("Unknown dir {}", dir),
         };
-        if x < top_left.x {
-            top_left.x = x;
-        }
-        if y < top_left.y {
-            top_left.y = y;
-        }
-        if x > bottom_right.x {
-            bottom_right.x = x;
-        }
-        if y > bottom_right.y {
-            bottom_right.y = y;
-        }
+        top_left.x = cmp::min(x, top_left.x);
+        top_left.y = cmp::min(y, top_left.y);
+        bottom_right.x = cmp::max(x, bottom_right.x);
+        bottom_right.y = cmp::max(y, bottom_right.y);
     }
     return PaintingResult{
         top_left: top_left,
