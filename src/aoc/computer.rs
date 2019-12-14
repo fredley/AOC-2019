@@ -90,6 +90,7 @@ pub struct Computer {
     pub input_pointer: usize,
     pub is_halted: bool,
     pub relative_base: i64,
+    pub requires_input: bool,
 }
 
 impl Computer {
@@ -102,6 +103,7 @@ impl Computer {
             input: input.clone(),
             is_halted: false,
             relative_base: 0,
+            requires_input: false,
         }
     }
 
@@ -116,6 +118,7 @@ impl Computer {
     pub fn set_input(&mut self, input: Vec<i64>) -> () {
         self.input = input;
         self.input_pointer = 0;
+        self.requires_input = false;
     }
 
     pub fn run(&mut self) -> i64 {
@@ -169,6 +172,10 @@ impl Computer {
                 self.pc += 4;
             } else if opcode == 3 {
                 //input
+                if self.input.len() <= self.input_pointer {
+                    self.requires_input = true;
+                    return -999;
+                }
                 let mut target = *self.memory.entry(self.pc + 1).or_insert(0);
                 if mode1 == 2 {
                     target += self.relative_base;
