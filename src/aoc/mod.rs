@@ -15,6 +15,8 @@ mod day_11;
 mod day_12;
 mod day_13;
 mod day_14;
+mod day_15;
+mod day_16;
 mod computer;
 mod utils;
 
@@ -47,13 +49,15 @@ fn run_day(day: isize) {
         12 => day_12::day_twelve(),
         13 => day_13::day_thirteen(input),
         14 => day_14::day_fourteen(input),
+        15 => day_15::day_fifteen(input),
+        16 => day_16::day_sixteen(input),
         _ => println!("Specify a day, or 0 to run all"),
     }
 }
 
 fn run_all() {
     let mut day: isize = 1;
-    while day <= 14 {
+    while day <= 16 {
         run_day(day);
         day += 1;
     }
