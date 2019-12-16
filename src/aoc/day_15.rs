@@ -5,7 +5,6 @@ use pathfinding::directed::dijkstra;
 
 use std::collections::HashMap;
 use std::cmp;
-use std::io::{self, Read};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 struct Coord {
@@ -41,12 +40,11 @@ fn add_edge(graph: &mut HashMap<Coord, Vec<Coord>>, from: Coord, to: Coord) -> (
 pub fn day_fifteen(input: String) -> () {
     let mut x = 0;
     let mut y = 0;
-    let mut memory: Vec<i64> = input.split(",").map(utils::parse_int_64).collect();
+    let memory: Vec<i64> = input.split(",").map(utils::parse_int_64).collect();
     let mut computer = computer::Computer::new(vec![]);
     computer.set_memory(memory);
     // 1 north, 2 south, 3 west 4 east
     let mut dir = 2;
-    let mut output = 0;
     let mut map: HashMap<Coord, char> = HashMap::new();
     let mut graph: HashMap<Coord, Vec<Coord>> = HashMap::new();
     let mut top_left = Coord{x: 0, y: 0};
