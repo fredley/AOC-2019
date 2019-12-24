@@ -166,6 +166,7 @@ fn get_neighbours_recursive(graph: &mut HashMap<Coord, Vec<Coord>>, aa: &Coord, 
             }
             if is_inner_portal(&node, &neighbour){
                 // add one to depth
+                // println!("Sinking to depth {} at {:?} {:?}", node.depth + 1, node, neighbour);
                 filtered.push(Coord::newd(neighbour.x, neighbour.y, node.depth + 1));
             } else {
                 filtered.push(neighbour);
@@ -183,6 +184,7 @@ fn get_neighbours_recursive(graph: &mut HashMap<Coord, Vec<Coord>>, aa: &Coord, 
                     filtered.push(Coord::newd(neighbour.x, neighbour.y, node.depth - 1));
                 } else if is_inner_portal(&node, &neighbour){
                     // add one to depth
+                    // println!("Sinking to depth {} at {:?} {:?}", node.depth + 1, node, neighbour);
                     filtered.push(Coord::newd(neighbour.x, neighbour.y, node.depth + 1));
                 } else {
                     filtered.push(Coord::newd(neighbour.x, neighbour.y, node.depth));
@@ -193,30 +195,38 @@ fn get_neighbours_recursive(graph: &mut HashMap<Coord, Vec<Coord>>, aa: &Coord, 
     }
 }
 
-// fn is_inner_portal(node: &Coord, neighbour: &Coord) -> bool {
-//     return node.x == 32 && neighbour.x != 31 ||
-//     node.x == 88 && neighbour.x != 89 ||
-//     node.y == 32 && neighbour.y != 31 ||
-//     node.y == 86 && neighbour.y != 87
-// }
-
-// fn is_outer_portal(node: &Coord, neighbour: &Coord) -> bool {
-//     return node.x == 2 && neighbour.x > 3 ||
-//     node.x == 118 && neighbour.x < 117 ||
-//     node.y == 2 && neighbour.y > 3 ||
-//     node.y == 116 && neighbour.y < 115
-// }
-
 fn is_inner_portal(node: &Coord, neighbour: &Coord) -> bool {
-    return node.x == 8 && neighbour.x != 9 ||
-    node.x == 36 && neighbour.x != 35 ||
-    node.y == 8 && neighbour.y != 9 ||
-    node.y == 28 && neighbour.y != 27
+    let x1 = node.x as i32;
+    let x2 = neighbour.x as i32;
+    let y1 = node.y as i32;
+    let y2 = neighbour.y as i32;
+    return (node.x == 32 ||
+    node.x == 88 ||
+    node.y == 32 ||
+    node.y == 86) && ((x1 - x2).abs() > 1 || (y1 - y2).abs() > 1);
 }
 
 fn is_outer_portal(node: &Coord, neighbour: &Coord) -> bool {
     return node.x == 2 && neighbour.x > 3 ||
-    node.x == 42 && neighbour.x < 41 ||
+    node.x == 118 && neighbour.x < 117 ||
     node.y == 2 && neighbour.y > 3 ||
-    node.y == 34 && neighbour.y < 33
+    node.y == 116 && neighbour.y < 115
 }
+
+// fn is_inner_portal(node: &Coord, neighbour: &Coord) -> bool {
+//     let x1 = node.x as i32;
+//     let x2 = neighbour.x as i32;
+//     let y1 = node.y as i32;
+//     let y2 = neighbour.y as i32;
+//     return (x1 == 8 ||
+//     x1 == 36 ||
+//     y1 == 8 ||
+//     y1 == 28) && ((x1 - x2).abs() > 1 || (y1 - y2).abs() > 1);
+// }
+
+// fn is_outer_portal(node: &Coord, neighbour: &Coord) -> bool {
+//     return node.x == 2 && neighbour.x > 3 ||
+//     node.x == 42 && neighbour.x < 41 ||
+//     node.y == 2 && neighbour.y > 3 ||
+//     node.y == 34 && neighbour.y < 33
+// }
