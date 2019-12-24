@@ -121,6 +121,14 @@ impl Computer {
         self.requires_input = false;
     }
 
+    pub fn set_input_ascii(&mut self, letters: String) -> () {
+        let mut input: Vec<i64> = Vec::new();
+        for letter in letters.chars() {
+            input.push(letter as u8 as i64);
+        }
+        self.set_input(input);
+    }
+
     pub fn run(&mut self) -> i64 {
         let mut output = 0;
         loop {

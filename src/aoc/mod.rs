@@ -20,6 +20,7 @@ mod day_16;
 mod day_17;
 mod day_19;
 mod day_20;
+mod day_21;
 mod computer;
 mod utils;
 
@@ -60,6 +61,7 @@ fn run_day(day: isize) {
         17 => day_17::day_seventeen(input),
         19 => day_19::day_nineteen(input),
         20 => day_20::day_twenty(input),
+        21 => day_21::day_twenty_one(input),
         _ => println!("Specify a day, or 0 to run all"),
     }
 }
