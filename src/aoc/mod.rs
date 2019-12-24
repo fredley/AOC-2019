@@ -18,6 +18,8 @@ mod day_14;
 mod day_15;
 mod day_16;
 mod day_17;
+mod day_19;
+mod day_20;
 mod computer;
 mod utils;
 
@@ -33,7 +35,10 @@ pub fn main() {
 
 fn run_day(day: isize) {
     let filename = format!("./src/inputs/{:?}.txt", day);
-    let input = fs::read_to_string(filename).expect("Something went wrong reading the file").trim().to_string();
+    let mut input = fs::read_to_string(filename).expect("Something went wrong reading the file");
+    if day != 20 {
+        input = input.trim().to_string();
+    }
     println!("Day {}:", day);
     match day {
         1 => day_1::day_one(input),
@@ -53,13 +58,15 @@ fn run_day(day: isize) {
         15 => day_15::day_fifteen(input),
         16 => day_16::day_sixteen(input),
         17 => day_17::day_seventeen(input),
+        19 => day_19::day_nineteen(input),
+        20 => day_20::day_twenty(input),
         _ => println!("Specify a day, or 0 to run all"),
     }
 }
 
 fn run_all() {
     let mut day: isize = 1;
-    while day <= 17 {
+    while day <= 20 {
         run_day(day);
         day += 1;
     }
